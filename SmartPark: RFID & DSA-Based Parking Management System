@@ -1,0 +1,96 @@
+#include <iostream>
+#include <queue>
+#include <unordered_map>
+#include <vector>
+using namespace std;
+
+// -----------------------------
+// Vehicle Hash Map
+// -----------------------------
+unordered_map<string, int> vehicle_map; // vehicle_id -> slot_number
+
+// -----------------------------
+// Parking System Class
+// -----------------------------
+class SmartParkingDSA {
+private:
+    priority_queue<int, vector<int>, greater<int>> available_slots; // Min Heap
+    unordered_map<int, string> occupied_slots; // slot_number -> vehicle_id
+    int total_slots;
+
+public:
+    SmartParkingDSA(int slots) {
+        total_slots = slots;
+        for (int i = 1; i <= total_slots; i++) {
+            available_slots.push(i); // initialize all slots
+        }
+    }
+
+    // Park Vehicle
+    void park_vehicle(string vehicle_id) {
+        if (vehicle_map.find(vehicle_id) != vehicle_map.end()) {
+            cout << "Vehicle " << vehicle_id << " already parked at slot " << vehicle_map[vehicle_id] << endl;
+            return;
+        }
+        if (available_slots.empty()) {
+            cout << "Parking Full! Cannot park vehicle." << endl;
+            return;
+        }
+        int slot = available_slots.top();
+        available_slots.pop();
+        occupied_slots[slot] = vehicle_id;
+        vehicle_map[vehicle_id] = slot;
+        cout << "Vehicle " << vehicle_id << " parked at slot " << slot << endl;
+    }
+
+    // Vehicle Exit
+    void exit_vehicle(string vehicle_id) {
+        if (vehicle_map.find(vehicle_id) == vehicle_map.end()) {
+            cout << "Vehicle " << vehicle_id << " not found in parking" << endl;
+            return;
+        }
+        int slot = vehicle_map[vehicle_id];
+        available_slots.push(slot); // free slot back to heap
+        occupied_slots.erase(slot);
+        vehicle_map.erase(vehicle_id);
+        cout << "Vehicle " << vehicle_id << " exited from slot " << slot << endl;
+    }
+
+    // Display Parking Status
+    void display_parking() {
+        cout << "\nOccupied Slots:\n";
+        for (auto it : occupied_slots) {
+            cout << "Slot " << it.first << " -> Vehicle " << it.second << endl;
+        }
+        cout << "Available Slots: ";
+        priority_queue<int, vector<int>, greater<int>> temp = available_slots;
+        while (!temp.empty()) {
+            cout << temp.top() << " ";
+            temp.pop();
+        }
+        cout << endl;
+    }
+};
+
+// -----------------------------
+// Simulation
+// -----------------------------
+int main() {
+    SmartParkingDSA parking(5);
+
+    // Park Vehicles
+    parking.park_vehicle("KA-01-A1234");
+    parking.park_vehicle("KA-02-B5678");
+    parking.park_vehicle("KA-03-C9101");
+    parking.display_parking();
+
+    // Vehicle Exit
+    parking.exit_vehicle("KA-02-B5678");
+    parking.display_parking();
+
+    // New Vehicle Park
+    parking.park_vehicle("KA-04-D1121");
+    parking.display_parking();
+
+    return 0;
+}
